@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
+    'taggit',
     'blog.apps.BlogConfig',
 ]
 
@@ -75,10 +79,31 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Move data to postgresql
+# python manage.py dumpdata --indent=2 --output=mysite_data.json
+# docker pull postgres:16.2
+# docker run --name=blog_db -e POSRGRES_DB=blog -e POSTGRES_USER=blog -e POSTGRES_PASSWORD=funtik123 -p 5432:5432 -d postgres:16.2
+# python -m pip install "psycopg[binary,pool]"
+# python manage.py loaddata mysite_data.json
+# Errors:
+# psycopg.errors.UniqueViolation: duplicate key value violates unique constraint "django_content_type_app_label_model_76bd3d3b_uniq"
+# DETAIL:  Key (app_label, model)=(blog, post) already exists.
+
+# Repair https://stackoverflow.com/questions/64662550/i-am-unable-to-loaddata-json-into-my-postgres-database
+# python manage.py shell
+# from django.contrib.contenttypes.models import ContentType
+# ContentType.objects.all().delete()
+# python manage.py loaddata mysite_data.json
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
     }
 }
 
@@ -133,3 +158,5 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
  
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+SITE_ID = 1
